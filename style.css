@@ -1,0 +1,138 @@
+input[type="file"] {
+    display: none;
+}
+
+.button {
+    padding: 5px 10px;
+    margin: 5px;
+    font-size: 14px;
+    background-color: #ff5174;
+    color: #F6F5F2;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Arial', serif; 
+    line-height: 1.2;
+    box-shadow: 0 2px 4px #942b40d8; 
+}
+
+#save {
+    display: block;
+}
+
+.button:hover {
+    background-color: #fe7792ee;
+}
+
+.window {
+    display: flex;
+    justify-content: center; 
+    align-items: flex-start; 
+    padding: 20px;
+    gap: 15px; 
+}
+
+.display {
+    width: 50%; 
+    height: 70%;
+    border-radius: 8px;
+    background-color:  #fd6b886f;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 
+              0 2px 4px #dc3f5f; 
+}
+
+.header {
+    width: 100%;
+    margin-bottom: 5px;
+}
+
+.form {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+
+}
+
+input[type="text"] {
+    width: 70%;
+    padding: 5px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: 1.5px solid #e84e6dda;
+    box-shadow: 0 2px 4px #dc3f5f; 
+}
+
+
+.block-for-cases {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.case {
+    background-color: #fff3f3f3 ;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    display: flex;  
+    align-items: center;
+    transition: background-color 0.4s ease;
+    box-shadow: 0 2px 4px #dc3f5f; 
+}
+
+.case:hover {
+    background-color: white; 
+}
+
+.case-text {
+    font-style: oblique;
+    flex-grow: 1;
+    size:12px;
+    display: inline;
+    margin: 10px;
+    cursor: pointer; 
+}
+
+#system-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 2px; 
+}
+
+#delete-buttons {
+    background-color: #488fe5;
+    box-shadow: 0 2px 4px #3d79c2; 
+}
+
+#delete-buttons:hover {
+    background-color: #559AEF;
+}
+
+#today {
+    padding: 10px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    background-color: #fff3f3f3;
+    border: 1px solid #f8849b7b;
+    box-shadow: 0 2px 4px #dc3f5f; 
+}
+
+#time {
+    font-style: oblique;
+    margin: 2px; 
+}
+
+#date {
+    font-style: oblique;
+    margin: 2px; 
+}
+
+h4 {
+    margin: 2px;
+    color: #dc3f5f;
+    font-style: oblique;
+}

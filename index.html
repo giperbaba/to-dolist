@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>to-do list</title>
+</head>
+<body>
+    <div class="window">
+        <div id="system-buttons">
+            <div id="today">
+                <h2 id="time"></h2>
+                <h3 id="date"></h3>
+                <h4>• your to-do list •</h4>
+            </div>
+            <label class="button" for="input">загрузить список дел</label>
+            <input type="file" id="input" onchange="displayJsonFile(this)" accept="application/JSON" />
+            <button class="button" id="save" onclick="downloadTasksJSON()">сохранить список дел</button>
+        </div>
+        <div class="display">
+            <div class="header">
+                <div class="form">
+                    <input type="text" id="case-input"/>
+                    <button class="button" onclick="addNewCase()">добавить дело</button>
+                </div>
+            </div>
+            <div class="block-for-cases"></div>
+        </div>
+    </div>
+</body>
+</html>
+<script src="script.js"></script>
