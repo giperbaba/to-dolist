@@ -1,6 +1,3 @@
-//JSON.parse()берет строку JSON и преобразует ее в объект JavaScript.
-//JSON.stringify()берет объект JavaScript и преобразует его в строку JSON.
-
 let tasks = new Array();
 
 const date = document.getElementById("date");
@@ -13,9 +10,6 @@ function updateTime() {
   time.textContent = today.toLocaleTimeString("ru-RU", timeOptions);
 }
 
-updateTime();
-setInterval(updateTime, 60000);
-
 class Case {
   constructor(id, isDone, description) {
     this.id = id;
@@ -24,16 +18,31 @@ class Case {
   }
 }
 
-function displayJsonFile(input) {
-  let jsonFile = input.files[0];
-  let reader = new FileReader();
+window.onload = function () {
+  updateTime();
+  loadTasks();
+  setInterval(updateTime, 60000);
+};
 
-  reader.addEventListener("loadend", (event) => {
-    displayAll(JSON.parse(reader.result));
-  });
+function addNewCase() {
+  let newCaseInput = document.getElementById("case-input");
+  let task = { isDone: false, description: newCaseInput.value };
 
-  reader.readAsText(jsonFile);
+  if (task.description !== "") {
+    createTaskPostRequest(task)
+      .then((data) => {
+        let savedTaskId = data.id;
+        let newCase = new Case(savedTaskId, false, newCaseInput.value);
+
+        tasks.push(newCase);
+        display(newCase);
+        newCaseInput.value = "";
+      })
+      .catch((error) => console.error("ошибка при создании задачи:", error));
+  }
 }
+
+//визуальная часть
 
 function displayAll(uploadCases) {
   for (let i = 0; i < uploadCases.length; i++) {
@@ -62,15 +71,26 @@ function getCheckboxFor(task) {
   const caseCheckboxHTML = document.createElement("input");
   caseCheckboxHTML.setAttribute("type", "checkbox");
 
-  if (task.isDone == "done") {
+  if (task.isDone == true) {
     caseCheckboxHTML.checked = true;
   }
 
   caseCheckboxHTML.addEventListener("change", () => {
-    updateCaseStatus(task.id, caseCheckboxHTML.checked);
+    updateCaseIsDone(task.id, caseCheckboxHTML.checked);
   });
 
   return caseCheckboxHTML;
+}
+
+function updateCaseIsDone(id, isChecked) {
+  console.log(id);
+  for (let i = 0; i < tasks.length; i++) {
+    if (tasks[i].id === id) {
+      tasks[i].isDone = isChecked ? true : false;
+      break;
+    }
+  }
+  updateCaseStatusPutRequest(id, isChecked);
 }
 
 function getTextFor(task) {
@@ -86,13 +106,25 @@ function getTextFor(task) {
       if (event.key === "Enter") {
         event.preventDefault();
         if (caseText != "") {
-          saveChanges(caseText, task);
+          updateCaseDescription(caseText, task);
         }
       }
     });
   });
 
   return caseText;
+}
+
+function updateCaseDescription(caseText, task) {
+  caseText.removeAttribute("contenteditable");
+  task.description = caseText.innerText;
+
+  tasks = tasks.map((caseItem) =>
+    caseItem === task
+      ? { ...caseItem, description: task.description }
+      : caseItem
+  );
+  updateCaseDescriptionPutRequest(task.id, task.description);
 }
 
 function getDeleteButtonFor(task, blockForCasesHTML, newCaseHTML) {
@@ -105,43 +137,106 @@ function getDeleteButtonFor(task, blockForCasesHTML, newCaseHTML) {
   deleteButtonHTML.onclick = () => {
     blockForCasesHTML.removeChild(newCaseHTML);
     tasks = tasks.filter((caseItem) => caseItem !== task);
+    deleteCaseRequest(task.id)
   };
   return deleteButtonHTML;
 }
 
-function saveChanges(caseText, task) {
-  caseText.removeAttribute("contenteditable");
-  task.description = caseText.innerText;
+//запросы
 
-  tasks = tasks.map((caseItem) =>
-    caseItem === task
-      ? { ...caseItem, description: task.description }
-      : caseItem
-  );
+function loadTasks() {
+  fetch("http://localhost:8090/api/todo_list")
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("ошибка при загрузке задач");
+      }
+      return response.json();
+    })
+    .then((tasksFromServer) => {
+      tasksFromServer.forEach((taskData) => {
+        let task = new Case(taskData.id, taskData.isDone, taskData.description);
+        tasks.push(task);
+        display(task);
+      });
+    })
+    .catch((error) => console.error("ошибка при загрузке задач:", error));
 }
 
-function updateCaseStatus(id, isChecked) {
-  for (let i = 0; i < tasks.length; i++) {
-    if (tasks[i].id === id) {
-      tasks[i].isDone = isChecked ? "done" : "notdone";
-      break;
+function createTaskPostRequest(task) {
+  return fetch("http://localhost:8090/api/todo_list/create", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(task),
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error("Ошибка при создании задачи");
     }
-  }
+    return response.json();
+  });
 }
 
-function addNewCase() {
-  let newCaseInput = document.getElementById("case-input");
-  let newCase = new Case(generateRandomId(), "notdone", newCaseInput.value);
-
-  if (newCase.description != "") {
-    display(newCase);
-    newCaseInput.value = "";
-    tasks.push(newCase);
-  }
+function updateCaseStatusPutRequest(id, isChecked) {
+  fetch(`http://localhost:8090/api/todo_list/update/is_done/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ "isDone": isChecked }),
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error("ошибка при обновлении статуса задачи");
+    }
+    return response.json();
+  });
 }
 
-function generateRandomId() {
-  return Math.random().toString(36);
+function updateCaseDescriptionPutRequest(id, newDescription) {
+  fetch(`http://localhost:8090/api/todo_list/update/desc/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ newDescription: newDescription }),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("ошибка при обновлении описания задачи");
+      }
+      return response.json();
+    })
+    .catch((error) => {
+      console.error("ошибка при обновлении описания задачи:", error);
+    });
+}
+
+function deleteCaseRequest(id) {
+  fetch(`http://localhost:8090/api/todo_list/delete/${id}`, {
+    method: "DELETE",
+  })
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Ошибка при удалении задачи");
+      }
+    })
+    .catch((error) => {
+      console.error("ошибка при удалении задачи:", error);
+    });
+}
+
+
+//работа с json files
+
+function displayJsonFile(input) {
+  let jsonFile = input.files[0];
+  let reader = new FileReader();
+
+  reader.addEventListener("loadend", (event) => {
+    displayAll(JSON.parse(reader.result));
+  });
+
+  reader.readAsText(jsonFile);
 }
 
 function downloadTasksJSON() {
